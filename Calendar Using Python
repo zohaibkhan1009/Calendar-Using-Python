@@ -1,0 +1,68 @@
+import calendar
+from termcolor import colored
+
+# Indian Public Holidays (example, extendable)
+INDIAN_HOLIDAYS = {
+    "01-26": "Republic Day",
+    "08-15": "Independence Day",
+    "10-02": "Gandhi Jayanti",
+    "11-12": "Diwali",
+    "12-25": "Christmas"
+}
+
+def format_calendar(year):
+    try:
+        cal = calendar.Calendar(firstweekday=6)  # Start with Sunday
+        months = []
+
+        # Generate all months
+        for month in range(1, 13):
+            month_days = cal.monthdayscalendar(year, month)
+            month_header = calendar.month_name[month].center(20)  # Month title centered
+            week_header = "Su Mo Tu We Th Fr Sa"  # Weekdays header
+            month_lines = [month_header, week_header]
+
+            # Generate each week's day numbers
+            for week in month_days:
+                week_line = ""
+                for day in week:
+                    if day == 0:  # Empty space for days outside the month
+                        week_line += "   "
+                    else:
+                        day_str = f"{day:2}"  # Format day as 2 digits
+                        date_key = f"{month:02d}-{day:02d}"
+
+                        # Apply coloring for Sundays, Saturdays, and Holidays
+                        if week.index(day) == 0:  # Sunday
+                            week_line += colored(day_str, 'red') + " "
+                        elif week.index(day) == 6:  # Saturday
+                            week_line += colored(day_str, 'green') + " "
+                        elif date_key in INDIAN_HOLIDAYS:  # Public holiday
+                            week_line += colored(day_str, 'cyan', attrs=['bold']) + " "
+                        else:  # Regular day
+                            week_line += day_str + " "
+                month_lines.append(week_line.rstrip())  # Remove trailing spaces
+
+            months.append(month_lines)
+
+        # Arrange 12 months in 4 rows with 3 months per row
+        for row in range(0, 12, 3):
+            combined_row = [""] * max(len(months[row + i]) for i in range(3))
+            for col in range(3):
+                for i, line in enumerate(months[row + col]):
+                    combined_row[i] += line.ljust(22)  # Space between months
+            print("\n".join(combined_row))
+            print("\n")  # Blank line after each row of months
+
+    except Exception as e:
+        print("An error occurred:", e)
+
+# Input the year
+try:
+    year = int(input("Enter Year: "))
+    if year < 1:
+        raise ValueError("Year must be a positive integer.")
+    print(f"\n{year} Calendar\n".center(80, "="))
+    format_calendar(year)
+except ValueError as ve:
+    print("Invalid input! Please enter a valid year.")
